@@ -2,7 +2,7 @@
 
 require 'json/schema_builder'
 
-%w[base builder_overrides context].each do |file|
+%w[base builder_overrides context configuration].each do |file|
   require "json/schema_templates/#{file}"
 end
 
@@ -10,13 +10,12 @@ module JSON
   module SchemaTemplates
     class Error < StandardError; end
 
-    class << self
-      attr_accessor :configuration
+    def self.configuration
+      @configuration ||= Configuration.new
+    end
 
-      def configure
-        self.configuration ||= Configuration.new
-        yield(configuration)
-      end
+    def self.configure
+      yield(configuration)
     end
   end
 end
