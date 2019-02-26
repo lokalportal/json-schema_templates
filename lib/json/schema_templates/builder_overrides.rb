@@ -1,7 +1,7 @@
 module JSON
   module SchemaTemplates
     module BuilderOverrides
-      def object(name = nil, additional_properties: false, partial: nil, locals: {}, **options, &block)
+      def object(name = nil, additional_properties: ::JSON::SchemaTemplates.configuration.additional_properties_on_objects, partial: nil, locals: {}, **options, &block)
         obj = builder.object(name, options.merge(additional_properties: additional_properties))
 
         if partial

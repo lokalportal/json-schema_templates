@@ -1,11 +1,10 @@
+# frozen_string_literal: true
+
 module Examples
-  module BasicAttributes
+  module CustomTypes
     class Schema < ::JSON::SchemaTemplates::Base
       schema do
-        object :data do
-          string :title
-          string :body
-        end
+        datetime :created_at, required: true
       end
     end
   end
