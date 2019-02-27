@@ -9,6 +9,7 @@ end
 module JSON
   module SchemaTemplates
     class Error < StandardError; end
+    class InvalidSchemaMethodError < Error; end
 
     def self.configuration
       @configuration ||= Configuration.new

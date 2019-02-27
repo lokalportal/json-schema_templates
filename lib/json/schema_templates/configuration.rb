@@ -7,8 +7,32 @@ module JSON
       attr_accessor :additional_properties_on_base_object
 
       def initialize
-        self.additional_properties_on_objects = false
-        self.additional_properties_on_base_object = false
+        reset!
+      end
+
+      def defaults_for(subject)
+        defaults[subject.to_sym]
+      end
+
+      #
+      # Resets the configuration back to its default values
+      #
+      def reset!
+        self.additional_properties_on_objects = nil
+        self.additional_properties_on_base_object = nil
+      end
+
+      private
+
+      def defaults
+        {
+          base_object: {
+            additional_properties: additional_properties_on_base_object
+          },
+          object: {
+            additional_properties: additional_properties_on_objects
+          }
+        }.transform_values(&:compact)
       end
     end
   end

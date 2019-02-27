@@ -1,9 +1,8 @@
 # frozen_string_literal: true
 
 describe Examples::BaseObject::Schema, type: :integration do
-  context 'when disallowing additional properties on the base object' do
-    before(:each) { JSON::SchemaTemplates.configuration.additional_properties_on_base_object = false }
-
+  context 'when disallowing additional properties on the base object',
+          configuration: {additional_properties_on_base_object: false} do
     include_examples 'schema comparison' do
       let(:expected_schema_definition) do
         proc do
@@ -15,9 +14,8 @@ describe Examples::BaseObject::Schema, type: :integration do
     end
   end
 
-  context 'when allowing additional properties on the base object' do
-    before(:each) { JSON::SchemaTemplates.configuration.additional_properties_on_base_object = true }
-
+  context 'when allowing additional properties on the base object',
+          configuration: {additional_properties_on_base_object: true} do
     include_examples 'schema comparison' do
       let(:expected_schema_definition) do
         proc do

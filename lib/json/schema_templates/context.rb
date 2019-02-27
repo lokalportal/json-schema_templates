@@ -13,7 +13,7 @@ module JSON
         Context.new(object).yield_self { |c| block ? c.tap_eval(&block) : c }
       end
 
-      def initialize(builder = Builder.new.object(additional_properties: config(:additional_properties_on_base_object)))
+      def initialize(builder = Builder.new.object(defaults_for(:base_object)))
         @builder = builder
       end
 
@@ -22,8 +22,10 @@ module JSON
       #----------------------------------------------------------------
 
       def method_missing(meth, *args, &block)
-        if @locals.key?(meth.to_sym)
-          @locals[meth.to_sym]
+        puts "missing: #{meth}"
+
+        if local?(meth)
+          locals[meth.to_sym]
         elsif builder.respond_to?(meth)
           builder.public_send(meth, *args, &block)
         else
@@ -32,7 +34,7 @@ module JSON
       end
 
       def respond_to_missing?(meth, include_private = false)
-        @locals.key?(meth.to_sym) || builder.respond_to?(meth, include_private)
+        local?(meth) || builder.respond_to?(meth, include_private)
       end
 
       #
@@ -46,6 +48,16 @@ module JSON
       #
       def tap_eval(locals: {}, &block)
         tap { |c| with_locals(locals) { c.instance_eval(&block) } }
+      end
+
+      private
+
+      def local?(name)
+        locals.key?(name.to_sym)
+      end
+
+      def locals
+        @locals ||= {}
       end
 
       #
@@ -63,6 +75,7 @@ module JSON
 
       delegate :wrap, to: 'self.class'
       delegate :as_json, to: :builder
+      delegate :defaults_for, to: 'JSON::SchemaTemplates.configuration'
       private :wrap
 
       def config(name)
