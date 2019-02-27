@@ -6,7 +6,11 @@ module Examples
       class User < ::JSON::SchemaTemplates::Base
         schema do
           string :name
-          string :avatar_url
+
+          # the more verbose form of `partial: 'attachment'`
+          object :avatar do
+            partial 'attachment'
+          end
 
           partial 'shared/timestamps', locals: {mandatory: true}
         end

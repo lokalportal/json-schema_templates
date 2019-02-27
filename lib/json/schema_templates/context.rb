@@ -57,21 +57,36 @@ module JSON
 
       private
 
+      def current_path_nested?
+        current_path.include?('/')
+      end
+
+      def partial_search_paths(requested_partial)
+        [].tap do |paths|
+          if current_path_nested?
+            paths << "#{current_path.split('/')[0..-2].join('/')}/#{requested_partial.pluralize}"
+          end
+
+          paths << current_path
+          paths << config(:base_path)
+        end.uniq
+      end
+
       #
-      # @param [String] partial_path
+      # @param [String] requested_partial
       #   The path to the partial as a slash separated string (e.g. 'users/user')
       #   The method will search for the partial in the same directory as the calling template
       #   as well as based on the root path
       #
       # @return [::JSON::SchemaTemplates::Base]
       #
-      def partial_class(partial_path)
-        [current_path, config(:base_path)].each do |path|
-          mod = "/#{path}/#{partial_path}".camelize.safe_constantize
+      def partial_class(requested_partial)
+        partial_search_paths(requested_partial).each do |path|
+          mod = "/#{path}/#{requested_partial}".camelize.safe_constantize
           return mod if mod
         end
 
-        fail InvalidSchemaPathError, "The partial #{partial_path.inspect} could not found"
+        fail InvalidSchemaPathError, "The partial #{requested_partial.inspect} could not found"
       end
 
       def local?(name)
