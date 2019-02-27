@@ -20,7 +20,7 @@ module JSON
       def object(name = nil, partial: nil, locals: {}, **options, &block)
         builder.object(name, options.reverse_merge(defaults_for(:object))).yield_self do |obj|
           if partial
-            ::JSON::SchemaTemplates::Base.partial_class(partial).new(wrap(obj)).partial(locals)
+            partial_class(partial).new(wrap(obj)).schema(locals)
           else
             wrap(obj, &block)
           end
@@ -29,10 +29,6 @@ module JSON
 
       def entity(name, **options, &block)
         wrap(builder.entity(name, options), &block)
-      end
-
-      def datetime(name, **options)
-        builder.string name, format: 'date-time', **options
       end
     end
   end

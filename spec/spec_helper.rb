@@ -5,6 +5,7 @@ require 'pry'
 require 'byebug'
 require 'pry-byebug'
 require 'json/schema_templates'
+require 'rspec/its'
 
 Dir['./spec/support/**/*.rb'].sort.each { |file| require file }
 
@@ -23,7 +24,7 @@ RSpec.configure do |config|
       ::JSON::SchemaTemplates.configuration.public_send("#{config_name}=", value)
     end
     example.run
-    ::JSON::SchemaTemplates.configuration.reset!
+    ::JSON::SchemaTemplates.configuration.send(:reset!)
   end
 
   config.expect_with :rspec do |c|

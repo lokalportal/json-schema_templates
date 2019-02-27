@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module JSON
   module SchemaTemplates
     class Context
@@ -5,16 +7,19 @@ module JSON
         include ::JSON::SchemaBuilder
       end
 
+      include AdditionalTypes
       include BuilderOverrides
 
       attr_reader :builder
+      attr_accessor :current_path
 
-      def self.wrap(object, &block)
-        Context.new(object).yield_self { |c| block ? c.tap_eval(&block) : c }
+      def self.wrap(object, **options, &block)
+        Context.new(object, **options).yield_self { |c| block ? c.tap_eval(&block) : c }
       end
 
-      def initialize(builder = Builder.new.object(defaults_for(:base_object)))
+      def initialize(builder = Builder.new.object(defaults_for(:base_object)), current_path: nil)
         @builder = builder
+        @current_path = current_path
       end
 
       #----------------------------------------------------------------
@@ -52,6 +57,23 @@ module JSON
 
       private
 
+      #
+      # @param [String] partial_path
+      #   The path to the partial as a slash separated string (e.g. 'users/user')
+      #   The method will search for the partial in the same directory as the calling template
+      #   as well as based on the root path
+      #
+      # @return [::JSON::SchemaTemplates::Base]
+      #
+      def partial_class(partial_path)
+        [current_path, config(:base_path)].each do |path|
+          mod = "/#{path}/#{partial_path}".camelize.safe_constantize
+          return mod if mod
+        end
+
+        fail InvalidSchemaPathError, "The partial #{partial_path.inspect} could not found"
+      end
+
       def local?(name)
         locals.key?(name.to_sym)
       end
@@ -73,10 +95,12 @@ module JSON
         end
       end
 
-      delegate :wrap, to: 'self.class'
       delegate :as_json, to: :builder
       delegate :defaults_for, to: 'JSON::SchemaTemplates.configuration'
-      private :wrap
+
+      def wrap(object, &block)
+        self.class.wrap(object, current_path: current_path, &block)
+      end
 
       def config(name)
         ::JSON::SchemaTemplates.configuration.public_send(name)
