@@ -6,7 +6,7 @@ module Examples
       class Attachment < ::JSON::SchemaTemplates::Base
         schema do
           string :url
-          datetime :uploaded_at
+          partial 'shared/timestamps', locals: {mandatory: false} # overrides the default local values
         end
       end
     end

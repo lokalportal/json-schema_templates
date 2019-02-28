@@ -19,7 +19,8 @@ describe Examples::Partials::Admin::Users::Show,
               string :name
               object :avatar, additional_properties: false do
                 string :url
-                string :uploaded_at, format: 'date-time'
+                string :created_at, required: false, format: 'date-time'
+                string :updated_at, required: false, format: 'date-time'
               end
 
               string :created_at, required: true, format: 'date-time'

@@ -9,10 +9,10 @@ module Examples
 
           # the more verbose form of `partial: 'attachment'`
           object :avatar do
-            partial 'attachment'
+            partial 'attachment' # same as 'attachments/attachment'
           end
 
-          partial 'shared/timestamps', locals: {mandatory: true}
+          partial 'shared/timestamps' # Uses default local values
         end
       end
     end

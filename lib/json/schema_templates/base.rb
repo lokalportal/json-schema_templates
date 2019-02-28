@@ -6,9 +6,17 @@ module JSON
       attr_reader :context
 
       class << self
-        def schema(&block)
+        #
+        # Defines a new JSON schema
+        #
+        # @param [Hash] default_locals
+        #   Can be used to define default locals to be available within the schema definition.
+        #   Any value given here is automatically overridden by a local passed in through a `partial` call
+        #   or a corresponding object call with `partial: 'something'`
+        #
+        def schema(**default_locals, &block)
           define_method :schema do |**locals|
-            context.tap_eval(locals: locals, &block)
+            context.tap_eval(locals: default_locals.merge(locals), &block)
           end
         end
       end
