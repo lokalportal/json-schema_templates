@@ -12,6 +12,12 @@ module Examples
             partial 'attachment' # same as 'attachments/attachment'
           end
 
+          array :profile_images do
+            items do
+              object partial: 'attachment'
+            end
+          end
+
           partial 'shared/timestamps' # Uses default local values
         end
       end

@@ -40,8 +40,6 @@ module JSON
       end
 
       def method_missing(meth, *args, &block)
-        puts "missing: #{meth}"
-
         if local?(meth)
           locals[meth.to_sym]
         elsif builder.respond_to?(meth)

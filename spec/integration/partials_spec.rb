@@ -23,6 +23,16 @@ describe Examples::Partials::Admin::Users::Show,
                 string :updated_at, required: false, format: 'date-time'
               end
 
+              array :profile_images do
+                items do
+                  object additional_properties: false do
+                    string :url
+                    string :created_at, required: false, format: 'date-time'
+                    string :updated_at, required: false, format: 'date-time'
+                  end
+                end
+              end
+
               string :created_at, required: true, format: 'date-time'
               string :updated_at, required: true, format: 'date-time'
             end

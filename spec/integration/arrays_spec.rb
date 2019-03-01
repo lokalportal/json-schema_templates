@@ -8,17 +8,19 @@ describe Examples::Arrays::Schema, type: :integration,
       proc do
         object do
           array :cars do
-            items type: :object do
-              string :manufacturer
-              array :extras, required: true do
-                items do
-                  any_of [
-                    object(additional_properties: false) { # rubocop:disable Style/BlockDelimiters
-                      string(:type, enum: 'Tire')
-                      string(:position, required: true)
-                    },
-                    object(additional_properties: false) { string(:type, enum: 'Wheel') }
-                  ]
+            items do
+              object additional_properties: false do
+                string :manufacturer
+                array :extras, required: true do
+                  items do
+                    any_of [
+                      object(additional_properties: false) { # rubocop:disable Style/BlockDelimiters
+                        string(:type, enum: 'Tire')
+                        string(:position, required: true)
+                      },
+                      object(additional_properties: false) { string(:type, enum: 'Wheel') }
+                    ]
+                  end
                 end
               end
             end
@@ -28,4 +30,3 @@ describe Examples::Arrays::Schema, type: :integration,
     end
   end
 end
-
