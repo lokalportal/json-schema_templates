@@ -1,4 +1,6 @@
 [![Build Status](https://travis-ci.org/lokalportal/json-schema_templates.svg?branch=master)](https://travis-ci.org/lokalportal/json-schema_templates)
+[![Maintainability](https://api.codeclimate.com/v1/badges/42d06911ff938599c00a/maintainability)](https://codeclimate.com/github/lokalportal/json-schema_templates/maintainability)
+[![Test Coverage](https://api.codeclimate.com/v1/badges/42d06911ff938599c00a/test_coverage)](https://codeclimate.com/github/lokalportal/json-schema_templates/test_coverage)
 
 # Json::SchemaTemplates
 
