@@ -26,7 +26,7 @@ module JSON
         # By passing ourselves to the partial, it will override our current path
         # with its own path. Therefore, we have to reset it to its original value
         # after the partial was rendered.
-        self.current_path = current_path.tap do
+        self.current_schema = current_schema.tap do
           partial_class(partial_path).new(self).schema(locals)
         end
       end

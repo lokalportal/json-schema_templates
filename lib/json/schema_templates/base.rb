@@ -23,7 +23,21 @@ module JSON
 
       def initialize(context = Context.new)
         @context = context
-        @context.current_path = self.class.to_s.deconstantize.underscore
+        @context.current_schema = self
+      end
+
+      #
+      # @return [String] The module path up to the module that contains this schema's class
+      #
+      def dirname
+        self.class.to_s.deconstantize.underscore
+      end
+
+      #
+      # @return [String] The module path of this schema, including the schema class itself
+      #
+      def path
+        self.class.to_s.underscore
       end
 
       def method_missing(meth, *args, &block)

@@ -11,7 +11,7 @@ module JSON
       include BuilderOverrides
 
       attr_reader :builder
-      attr_accessor :current_path
+      attr_accessor :current_schema
 
       #
       # Wraps the given JSON::SchemaBuilder entity in a new context
@@ -21,9 +21,9 @@ module JSON
         Context.new(object, **options).yield_self { |c| block ? c.tap_eval(&block) : c }
       end
 
-      def initialize(builder = Builder.new.object(defaults_for(:base_object)), current_path: nil)
+      def initialize(builder = Builder.new.object(defaults_for(:base_object)), current_schema: nil)
         @builder = builder
-        @current_path = current_path
+        @current_schema = current_schema
       end
 
       #
@@ -44,6 +44,8 @@ module JSON
           locals[meth.to_sym]
         elsif builder.respond_to?(meth)
           builder.public_send(meth, *args, &block)
+        elsif helper_method?(meth)
+          instance_exec(*args, &current_schema.method(meth).to_proc)
         else
           super
         end
@@ -54,6 +56,10 @@ module JSON
       end
 
       private
+
+      def current_path
+        current_schema.dirname
+      end
 
       #
       # @return [Boolean] +true+ if the current schema is at least one module level deeper than the root module
@@ -119,6 +125,10 @@ module JSON
         @locals ||= {}
       end
 
+      def helper_method?(meth)
+        current_schema.respond_to?(meth)
+      end
+
       #
       # Executes the given block with the given locals
       #
@@ -141,7 +151,7 @@ module JSON
       # to forward it to the new context
       #
       def wrap(object, &block)
-        self.class.wrap(object, current_path: current_path, &block)
+        self.class.wrap(object, current_schema: current_schema, &block)
       end
 
       #
