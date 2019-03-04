@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/lokalportal/json-schema_templates.svg?branch=master)](https://travis-ci.org/lokalportal/json-schema_templates)
+
 # Json::SchemaTemplates
 
 Built on top of [JSON::SchemaBuilder](https://github.com/parrish/json-schema_builder), `JSON::SchemaTemplates`
