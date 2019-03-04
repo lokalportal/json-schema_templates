@@ -11,4 +11,3 @@ describe Examples::CustomTypes::Schema, type: :integration do
     end
   end
 end
-
