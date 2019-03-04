@@ -17,6 +17,11 @@ module JSON
       # `Schemas::MySchema`
       attr_accessor :base_path
 
+      # If set to +true+, schemas which were generated once are cached.
+      # This speeds up time, especially in tests as JSON::SchemaBuilder seems to be quite slow
+      # when it comes to re-opening objects.
+      attr_accessor :cache_schemas
+
       def initialize
         reset!
       end
@@ -42,6 +47,7 @@ module JSON
         self.additional_properties_on_objects = nil
         self.additional_properties_on_base_object = nil
         self.base_path = 'schemas'
+        self.cache_schemas = false
       end
 
       def defaults
