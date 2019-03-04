@@ -1,8 +1,19 @@
 # Json::SchemaTemplates
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/json/schema_templates`. To experiment with that code, run `bin/console` for an interactive prompt.
+Built on top of [JSON::SchemaBuilder](https://github.com/parrish/json-schema_builder), `JSON::SchemaTemplates`
+contains some quality of life improvements when writing JSON schemas for Rails applications.
 
-TODO: Delete this and the text above, and describe your gem
+It is based purely on Ruby classes, but handles them as templates and partials,
+similar to ActionView in a lot of cases. This makes it easy to re-use
+parts of schemas and even pass in locals to change partial behaviour.
+
+It also allows setting default values for certain schema properties, e.g.
+`additional_properties` when defining objects. This way, you don't have to 
+include the argument in your schema every time, but instead only if you'd like
+to override the default value.
+
+Last but not least it defines a few new types, e.g. `datetime` as a shortcut for
+`string format: 'date-time'`.
 
 ## Installation
 
@@ -22,7 +33,48 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+Schemas are defined as Ruby classes inside a module structure resembling a template path.
+This means that all of your schemas reside in one root module, e.g. `Schemas`.
+
+Let's take a look at the following example (found in `spec/support/examples/basic_types`):
+
+```ruby
+module Examples
+  module BasicTypes
+    class Schema < ::JSON::SchemaTemplates::Base
+      schema do
+        string :title, min_length: 5, required: true
+        string :body, null: true
+      end
+    end
+  end
+end
+```
+
+The topmost module here is `Examples` which makes it our root module for schemas.  
+To allow the Gem to actually search for schemas within this module, we have to set
+the corresponding value in the configuration:
+
+```ruby
+JSON::SchemaTemplates.configure do |config|
+  config.base_path = 'examples'
+end
+```
+
+Notice that we didn't specify a module here, but rather a path, similar to rendering
+templates in ActionView. The reason is that we are now able to handle everything within `Examples` as an actual
+path: 
+
+The above template's path is - based on its module hierarchy - `basic_types/schema` and we can 
+render it using the helper method 
+
+```ruby
+JSON::SchemaTemplates.json_schema_for('basic_types/schema')
+```
+
+This README will be extended over time.  
+Until then, please take a look at the [examples](https://github.com/lokalportal/json-schema_templates/tree/master/spec/support/examples)
+for more information, e.g. on how to use partials in your schemas.
 
 ## Development
 
@@ -32,7 +84,7 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/json-schema_templates. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [Contributor Covenant](http://contributor-covenant.org) code of conduct.
+Bug reports and pull requests are welcome on GitHub at https://github.com/lokalportal/json-schema_templates. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [Contributor Covenant](http://contributor-covenant.org) code of conduct.
 
 ## License
 
