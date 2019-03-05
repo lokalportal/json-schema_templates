@@ -80,6 +80,12 @@ This README will be extended over time.
 Until then, please take a look at the [examples](https://github.com/lokalportal/json-schema_templates/tree/master/spec/support/examples)
 for more information, e.g. on how to use partials in your schemas.
 
+## Known Problems
+
+It is currently not possible to use `null: true` on objects due to a bug in `json-schema_builder` which causes
+an endless loop. There [is a PR](https://github.com/parrish/json-schema_builder/pull/10) which aims to solve the problem, 
+so until it's fixed, you could reference the corresponding repo + branch in your Gemfile alongside `json-schema_templates`. 
+
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
