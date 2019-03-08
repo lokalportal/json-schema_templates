@@ -50,7 +50,14 @@ module JSON
     # @see #schema_for for more information
     #
     def self.json_schema_for(schema_path)
-      schema_for(schema_path)&.as_json
+      schema_for(schema_path)&.as_json.yield_self do |schema|
+        return nil unless schema
+
+        {
+          id:        "#{configuration.schema_id_prefix}/#{schema_path}",
+          '$schema': 'http://json-schema.org/draft-04/schema#'
+        }.merge(schema)
+      end
     end
   end
 end

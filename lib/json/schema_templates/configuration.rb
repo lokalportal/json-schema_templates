@@ -22,6 +22,10 @@ module JSON
       # when it comes to re-opening objects.
       attr_accessor :cache_schemas
 
+      # The prefix to be used when generating IDs for JSON schemas,
+      # in most cases your application's domain.
+      attr_accessor :schema_id_prefix
+
       def initialize
         reset!
       end
@@ -48,6 +52,7 @@ module JSON
         self.additional_properties_on_base_object = nil
         self.base_path = 'schemas'
         self.cache_schemas = false
+        self.schema_id_prefix = 'https://example.com'
       end
 
       def defaults
