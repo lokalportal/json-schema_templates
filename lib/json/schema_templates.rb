@@ -32,13 +32,7 @@ module JSON
     #
     def self.schema_for(schema_path)
       full_path = "/#{configuration.base_path}/#{schema_path}"
-
-      if configuration.cache_schemas
-        @schema_cache ||= {}
-        @schema_cache[full_path] ||= full_path.camelize.safe_constantize&.new&.schema
-      else
-        full_path.camelize.safe_constantize&.new&.schema
-      end
+      full_path.camelize.safe_constantize&.new&.schema
     end
 
     #
@@ -50,8 +44,11 @@ module JSON
     # @see #schema_for for more information
     #
     def self.json_schema_for(schema_path)
-      schema_for(schema_path)&.as_json.yield_self do |schema|
-        return nil unless schema
+      @schema_cache ||= {}
+      return @schema_cache[schema_path] if configuration.cache_schemas && @schema_cache.key?(schema_path)
+
+      @schema_cache[schema_path] = schema_for(schema_path)&.as_json.yield_self do |schema|
+        next nil unless schema
 
         {
           id:        "#{configuration.schema_id_prefix}/#{schema_path}",
