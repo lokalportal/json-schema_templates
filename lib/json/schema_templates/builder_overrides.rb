@@ -19,8 +19,7 @@ module JSON
         # Unfortunately, we have to override quite a bit of internal functionality here
         # as JSON::SchemaBuilder::Array#items doesn't actually return said items and just sets them internally.
         # See https://github.com/parrish/json-schema_builder/blob/master/lib/json/schema_builder/array.rb#L16
-        builder.schema[:items] = tuple_definitions || items_entity(**options, &block)
-        builder.parent.reinitialize
+        builder.items(tuple_definitions || items_entity(**options, &block))
       end
 
       def object(name = nil, partial: nil, locals: {}, **options, &block)

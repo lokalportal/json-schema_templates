@@ -39,6 +39,11 @@ module JSON
         tap { |c| with_locals(locals) { c.instance_eval(&block) } }
       end
 
+      def instantiate
+        @builder = builder.instantiate
+        self
+      end
+
       def method_missing(meth, *args, &block)
         if local?(meth)
           locals[meth.to_sym]
