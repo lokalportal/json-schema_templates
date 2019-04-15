@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/lokalportal/json-schema_builder
-  revision: a7bb357bd6818282e3a2d91fd6ce23b38bb50be2
+  revision: 23c49cc8bbd8a8a017904fd37fdd0070d24dd298
   branch: lazy-render-schemas
   specs:
     json-schema_builder (0.8.2)
