@@ -4,7 +4,7 @@
 
 # Json::SchemaTemplates
 
-Built on top of [JSON::SchemaBuilder](https://github.com/parrish/json-schema_builder), `JSON::SchemaTemplates`
+Built on top of [JSON::SchemaDsl](https://github.com/parrish/json-schema_builder), `JSON::SchemaTemplates`
 contains some quality of life improvements when writing JSON schemas for Rails applications.
 
 It is based purely on Ruby classes, but handles them as templates and partials,

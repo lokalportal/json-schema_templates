@@ -39,6 +39,7 @@ Gem::Specification.new do |spec|
 
   # spec.add_dependency 'json-schema_builder', '~> 0.8.2'
 
+  spec.add_dependency 'json-schema', '< 3'
   spec.add_development_dependency 'bundler', '~> 1.17'
   spec.add_development_dependency 'pry', '~> 0.12'
   spec.add_development_dependency 'pry-byebug', '~> 3.6'

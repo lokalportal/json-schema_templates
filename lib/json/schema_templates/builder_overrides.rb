@@ -14,12 +14,14 @@ module JSON
       #   second schema etc.
       #
       def items(tuple_definitions = nil, **options, &block)
-        fail InvalidSchemaMethodError, '#items is only available inside Arrays' unless builder.type == :array
-
         # Unfortunately, we have to override quite a bit of internal functionality here
         # as JSON::SchemaBuilder::Array#items doesn't actually return said items and just sets them internally.
         # See https://github.com/parrish/json-schema_builder/blob/master/lib/json/schema_builder/array.rb#L16
-        builder.items(tuple_definitions || items_entity(**options, &block))
+        if tuple_definitions
+          builder.items(tuple_definitions)
+        else
+          builder.items items_entity(**options, &block)
+        end
       end
 
       def object(name = nil, partial: nil, locals: {}, **options, &block)
@@ -30,10 +32,6 @@ module JSON
             wrap(obj, &block)
           end
         end
-      end
-
-      def entity(name, **options, &block)
-        wrap(builder.entity(name, options), &block)
       end
 
       private
@@ -49,7 +47,7 @@ module JSON
       def items_entity(type: nil, **opts, &block)
         return send(type, opts, &block) if type
 
-        entity(nil, opts, &block).tap(&:merge_children!)
+        entity(nil, opts, &block)
       end
     end
   end

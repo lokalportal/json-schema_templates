@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
-require 'json/schema_builder'
+require 'json-schema'
+require 'json/schema_dsl'
 
 %w[base additional_types builder_overrides context configuration].each do |file|
   require "json/schema_templates/#{file}"

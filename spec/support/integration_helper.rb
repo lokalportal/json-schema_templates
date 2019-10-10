@@ -10,7 +10,7 @@ module IntegrationHelper
   let(:expected_schema) do
     expected_schema_definition.yield_self do |definition|
       Class.new do
-        include ::JSON::SchemaBuilder
+        include ::JSON::SchemaDsl
         define_method(:schema, &definition)
       end.new.schema
     end

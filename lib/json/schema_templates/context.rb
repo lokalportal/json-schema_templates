@@ -4,7 +4,7 @@ module JSON
   module SchemaTemplates
     class Context
       class Builder
-        include ::JSON::SchemaBuilder
+        include ::JSON::SchemaDsl
       end
 
       include AdditionalTypes
@@ -14,7 +14,7 @@ module JSON
       attr_accessor :current_schema
 
       #
-      # Wraps the given JSON::SchemaBuilder entity in a new context
+      # Wraps the given JSON::SchemaDsl entity in a new context
       # Any given options are directly forwarded to the newly created context
       #
       def self.wrap(object, **options, &block)
@@ -22,7 +22,7 @@ module JSON
       end
 
       def initialize(builder = Builder.new.object(defaults_for(:base_object)), current_schema: nil)
-        @builder = builder
+        @builder        = builder
         @current_schema = current_schema
       end
 
@@ -37,11 +37,6 @@ module JSON
       #
       def tap_eval(locals: {}, &block)
         tap { |c| with_locals(locals) { c.instance_eval(&block) } }
-      end
-
-      def instantiate
-        @builder = builder.instantiate
-        self
       end
 
       def method_missing(meth, *args, &block)
@@ -151,7 +146,7 @@ module JSON
       delegate :defaults_for, to: 'JSON::SchemaTemplates.configuration'
 
       #
-      # Wraps the given JSON::SchemaBuilder entity in a new context
+      # Wraps the given JSON::SchemaDsl entity in a new context
       # Not a direct delegation to Context.wrap as we need access to the current path
       # to forward it to the new context
       #

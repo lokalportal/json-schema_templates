@@ -18,7 +18,7 @@ module JSON
       attr_accessor :base_path
 
       # If set to +true+, schemas which were generated once are cached.
-      # This speeds up time, especially in tests as JSON::SchemaBuilder seems to be quite slow
+      # This speeds up time, especially in tests as JSON::SchemaDsl seems to be quite slow
       # when it comes to re-opening objects.
       attr_accessor :cache_schemas
 

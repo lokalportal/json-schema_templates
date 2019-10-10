@@ -28,7 +28,7 @@ module JSON
               next false
             end
 
-            @errors = schema.fully_validate(response_json.to_h)
+            @errors = JSON::Validator.fully_validate(schema.as_json, response_json.to_h)
             @errors.empty?
           end
 
