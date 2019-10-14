@@ -16,14 +16,13 @@ module JSON
         #
         def schema(**default_locals, &block)
           define_method :schema do |**locals|
-            context.tap_eval(locals: default_locals.merge(locals), &block)
+            context.context_eval(locals: default_locals.merge(locals), &block)
           end
         end
       end
 
       def initialize(context = Context.new)
         @context = context
-        @context.current_schema = self
       end
 
       #
