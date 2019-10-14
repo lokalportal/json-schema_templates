@@ -22,6 +22,8 @@ module JSON
           entity
         end
       end
+
+      ::JSON::SchemaDsl.registered_renderers.prepend(PartialExpander)
     end
   end
 end
