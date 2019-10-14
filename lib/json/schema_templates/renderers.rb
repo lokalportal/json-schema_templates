@@ -8,18 +8,21 @@ module JSON
           traverse(expand_partials(entity))
         end
 
+        private
+
         def expand_partials(entity)
           return entity unless entity[:children].present?
 
-          partials = entity[:children].select { |ch| ch[:type] == 'partial' }
-          return entity if partials.empty?
+          entity.merge(
+            children: entity[:children]
+                      .flat_map { |ch| ch[:type] == 'partial' ? expand_partial(ch) : ch }
+                      .reject { |ch| ch[:type] == 'partial' }
+          )
+        end
 
-          contexts = partials.map { |p| Context.new(p, scope) }
-          new_children = contexts.flat_map do |con|
-            self.class.new(con).visit(con.run.to_h)[:children]
-          end
-          entity[:children].reject! { |ch| ch[:type] == 'partial' }.push(*new_children)
-          entity
+        def expand_partial(partial)
+          con = Context.new(partial, scope)
+          self.class.new(con).visit(con.run.to_h)[:children]
         end
       end
 
