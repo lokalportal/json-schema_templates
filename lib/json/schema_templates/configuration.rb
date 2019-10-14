@@ -5,7 +5,13 @@ module JSON
     class Configuration
       # Sets a default value for `additional_properties` on objects used in schemas
       # Setting it to `nil` results in the key not being present in the resulting schema
-      attr_accessor :additional_properties_on_objects
+      def additional_properties_on_objects=(bool)
+        ::JSON::SchemaDsl.add_defaults_for(:object, additional_properties: bool)
+      end
+
+      def additional_properties_on_objects
+        ::JSON::SchemaDsl.type_defaults.dig(:object, :additional_properties)
+      end
 
       # Every generated schema is wrapped in a root object.
       # This setting controls whether this root object is allowed to have additional properties
@@ -31,7 +37,9 @@ module JSON
       end
 
       def defaults_for(subject)
-        defaults[subject.to_sym]
+        return defaults[subject.to_sym] if subject.to_sym == :base_object
+
+        ::JSON::SchemaDsl.type_defaults[subject]
       end
 
       #
@@ -59,9 +67,6 @@ module JSON
         {
           base_object: {
             additional_properties: additional_properties_on_base_object
-          },
-          object: {
-            additional_properties: additional_properties_on_objects
           }
         }.transform_values(&:compact)
       end
