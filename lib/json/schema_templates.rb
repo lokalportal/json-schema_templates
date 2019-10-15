@@ -21,6 +21,13 @@ module JSON
       yield(configuration)
     end
 
+    def self.enable!
+      JSON::SchemaDsl.register_type(Types::Email)
+      JSON::SchemaDsl.register_type(Types::DateTime)
+      JSON::SchemaDsl.register_type(Types::Partial)
+      JSON::SchemaDsl.registered_renderers.prepend(Renderers::PartialExpander)
+    end
+
     #
     # @return [JSON::SchemaTemplates::Context, nil] the requested schema or +nil+ if it couldn't be found.
     #
