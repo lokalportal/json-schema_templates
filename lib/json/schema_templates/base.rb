@@ -3,6 +3,7 @@
 module JSON
   module SchemaTemplates
     class Base
+      include JSON::SchemaDsl
       attr_reader :context
 
       class << self
@@ -21,8 +22,12 @@ module JSON
         end
       end
 
-      def initialize(context = Context.new)
+      def initialize(context = Context.new(self_partial, self, root: true))
         @context = context
+      end
+
+      def self_partial
+        {name: path.split('/').last, type: 'partial', current_dir: dirname}
       end
 
       #
@@ -37,18 +42,6 @@ module JSON
       #
       def path
         self.class.to_s.underscore
-      end
-
-      def method_missing(meth, *args, &block)
-        if context.respond_to?(meth)
-          context.public_send(meth, *args, &block)
-        else
-          super
-        end
-      end
-
-      def respond_to_missing?(meth, include_private = false)
-        context.respond_to?(meth, include_private)
       end
     end
   end
