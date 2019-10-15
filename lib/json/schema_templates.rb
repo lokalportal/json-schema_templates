@@ -3,7 +3,7 @@
 require 'json-schema'
 require 'json/schema_dsl'
 
-%w[base additional_types builder_overrides context configuration types renderers resolver].each do |file|
+%w[base context configuration types renderers resolver].each do |file|
   require "json/schema_templates/#{file}"
 end
 
