@@ -5,10 +5,11 @@ module JSON
     class Context
       include JSON::SchemaDsl
 
-      attr_reader :current_partial, :scope, :last_render
-      def initialize(current_partial, scope)
+      attr_reader :current_partial, :scope
+      def initialize(current_partial, scope, root: false)
         @current_partial = current_partial
-        @scope = scope
+        @scope           = scope
+        @root            = root
       end
 
       #
@@ -21,7 +22,8 @@ module JSON
       # @return [Wrapper] self
       #
       def context_eval(locals: {}, &block)
-        with_locals(locals) { instance_eval { object(scope: self, &block) } }
+        defaults = @root ?  defaults_for(:base_object) : {}
+        with_locals(locals) { instance_eval { object(**defaults, scope: self, &block) } }
       end
 
       def run
@@ -51,7 +53,7 @@ module JSON
       end
 
       def dirname
-        @schema&.dirname
+        @schema&.dirname || current_partial[:current_dir]
       end
 
       def resolver
