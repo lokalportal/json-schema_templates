@@ -20,6 +20,7 @@ RSpec.configure do |config|
   #   context 'when something happens', configuration: {additional_attributes_on_objects: false}
   #
   config.around :each, :configuration do |example|
+    ::JSON::SchemaTemplates.configuration.type_defaults.clear
     example.metadata[:configuration].each do |config_name, value|
       ::JSON::SchemaTemplates.configuration.public_send("#{config_name}=", value)
     end
