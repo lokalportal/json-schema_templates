@@ -26,5 +26,23 @@ describe JSON::SchemaTemplates::Renderers do
         expect(result['children'].select { |ch| ch['type'] == 'partial' }).to be_empty
       end
     end
+
+    context 'with a separate partial and locals ast node' do
+      let(:input) do
+        object partial: 'shared/timestamps', locals: {mandatory: false}
+      end
+
+      it 'removes the partial node' do
+        expect(result['children'].select { |ch| ch['type'] == 'partial' }).to be_empty
+      end
+
+      it 'applies the locals' do
+        expect(result['children']).to all(include('required' => false))
+      end
+
+      it 'removes the locals node' do
+        expect(result['children'].select { |ch| ch['type'] == 'locals' }).to be_empty
+      end
+    end
   end
 end
