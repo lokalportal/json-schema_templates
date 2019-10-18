@@ -29,7 +29,7 @@ module JSON
     end
 
     #
-    # @return [JSON::SchemaTemplates::Context, nil] the requested schema or +nil+ if it couldn't be found.
+    # @return [JSON::SchemaDsl::Builder, nil] the requested schema or +nil+ if it couldn't be found.
     #
     # @param [String] schema_path
     #   The requested schema relative to the schema base path.

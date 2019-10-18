@@ -2,15 +2,42 @@
 
 module JSON
   module SchemaTemplates
+    # Class to resolve partial paths by finding the schema-class based on the
+    #   base_path it was initialized with.
     class Resolver
       attr_reader :base_path
+
+      #
+      # @param [String] base_path The path the resolver will use as its base when
+      #   searching. Defaults to the root_path of SchemaTemplates. If The context
+      #   in which the resolver is constructed is nested, the base_path will be set
+      #   to that base path (I.e. when calling one partial from another).
+      # @see SchemaTemplates::Configuration.base_path
+      #
       def initialize(base_path = nil)
         @base_path = base_path || root_path
       end
 
-      def resolve(name)
-        partial_class(name)
+      #
+      # @param [String] requested_partial
+      #   The path to the partial as a slash separated string (e.g. 'users/user')
+      #   The method will search for the partial in the same directory as the calling template
+      #   as well as based on the root path
+      #
+      # @return [::JSON::SchemaTemplates::Base]
+      # @raise [JSON::SchemaTemplates::InvalidSchemaPathError] No partial with the given name could be found
+      #
+      def partial_class(requested_partial)
+        partial_search_paths(requested_partial).each do |path|
+          mod = "/#{path}/#{requested_partial}".camelize.safe_constantize
+          return mod if mod
+        end
+
+        fail InvalidSchemaPathError,
+             "The partial #{requested_partial.inspect} could not found." \
+             "Search paths were: #{partial_search_paths(requested_partial).inspect}"
       end
+      alias resolve partial_class
 
       private
 
@@ -52,26 +79,6 @@ module JSON
 
       def root_path
         ::JSON::SchemaTemplates.configuration.base_path
-      end
-
-      #
-      # @param [String] requested_partial
-      #   The path to the partial as a slash separated string (e.g. 'users/user')
-      #   The method will search for the partial in the same directory as the calling template
-      #   as well as based on the root path
-      #
-      # @return [::JSON::SchemaTemplates::Base]
-      # @raise [JSON::SchemaTemplates::InvalidSchemaPathError] No partial with the given name could be found
-      #
-      def partial_class(requested_partial)
-        partial_search_paths(requested_partial).each do |path|
-          mod = "/#{path}/#{requested_partial}".camelize.safe_constantize
-          return mod if mod
-        end
-
-        fail InvalidSchemaPathError,
-             "The partial #{requested_partial.inspect} could not found." \
-             "Search paths were: #{partial_search_paths(requested_partial).inspect}"
       end
     end
   end

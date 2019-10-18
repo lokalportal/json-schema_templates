@@ -2,9 +2,11 @@
 
 module JSON
   module SchemaTemplates
+    # Additional node-types to be registered with SchemaDsl
     module Types
       T = JSON::SchemaDsl::Types
 
+      # The `email` type that renders to a string node with the format 'email'.
       class Email < JSON::SchemaDsl::String
         def self.infer_type
           'string'
@@ -18,6 +20,7 @@ module JSON
       end
       JSON::SchemaDsl.register_type(Email)
 
+      # The `date_time` type that renders to a string with the format 'date-time'
       class DateTime < JSON::SchemaDsl::String
         def self.infer_type
           'string'
@@ -33,14 +36,18 @@ module JSON
 
       # Builder that is specifically defined to build the untyped locals node.
       class LocalsBuilder < JSON::SchemaDsl::Builder
+        # Since locals can have any attribute, the builder will accept any method
+        #   as an attribute setter/getter.
         def method_missing(meth, *args, &block)
           set(meth, *args, &block) || super
         end
 
+        # nodoc
         def respond_to_missing?(*)
           true
         end
 
+        # nodoc
         def self.inner_class
           Locals
         end
@@ -51,10 +58,12 @@ module JSON
       class Locals
         include ::JSON::SchemaDsl::AstNode
 
+        # @param [Hash] attributes The locals defined for this node.
         def initialize(attributes)
           @attributes = attributes
         end
 
+        # @return [Hash] The locals that are defined for this node.
         def attributes
           @attributes ||= {}
         end
@@ -71,6 +80,7 @@ module JSON
           {}
         end
 
+        # @return [Builder] The builder that is used to build this node.
         def self.builder
           LocalsBuilder
         end
