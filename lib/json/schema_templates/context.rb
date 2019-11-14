@@ -2,157 +2,149 @@
 
 module JSON
   module SchemaTemplates
+    #
+    # The execution context of a partial.
+    # Given a partial node, it uses a resolver to find the partial_class and executes that
+    # classes partial definition with itself as the scope. This allows the application of locals
+    # as well as further delegation to the calling scope of the context.
+    #
     class Context
-      class Builder
-        include ::JSON::SchemaBuilder
-      end
+      include JSON::SchemaDsl
 
-      include AdditionalTypes
-      include BuilderOverrides
-
-      attr_reader :builder
-      attr_accessor :current_schema
-
+      attr_reader :current_partial, :scope
       #
-      # Wraps the given JSON::SchemaBuilder entity in a new context
-      # Any given options are directly forwarded to the newly created context
+      # @param [Hash] current_partial The partial node that should be expanded.
+      # @param [Object] scope The calling scope that constructed the tree containing the
+      #   given partial node.
+      # @param [Boolean] root Whether or not this context is executing the definition of
+      #   a schema at its root. This only happens when schemas are initialized directly and the
+      #   expansion is not initiated by the {Renderers::PartialExpander}. If `true` the context will apply
+      #   a special set of defaults for the base_object.
       #
-      def self.wrap(object, **options, &block)
-        Context.new(object, **options).yield_self { |c| block ? c.tap_eval(&block) : c }
-      end
-
-      def initialize(builder = Builder.new.object(defaults_for(:base_object)), current_schema: nil)
-        @builder = builder
-        @current_schema = current_schema
+      def initialize(current_partial, scope, root: false)
+        @current_partial = current_partial
+        @scope           = scope
+        @root            = root
       end
 
       #
-      # Evaluates the given block in the context of the wrapper and returns the wrapper itself
+      # Evaluates the given block in this context and returns the resulting ast.
       #
       # @param [Hash] locals
       #   Locals which will be made available within the context.
       #   They are automatically available when being used inside a rendered partial
       #
-      # @return [Wrapper] self
+      # @return [Hash] The ast generated from the evaluation of the schema partial.
       #
-      def tap_eval(locals: {}, &block)
-        tap { |c| with_locals(locals) { c.instance_eval(&block) } }
+      def context_eval(locals: {}, &block)
+        defaults = @root ?  defaults_for(:base_object) : {}
+        with_locals(locals) { instance_eval { object(**defaults, scope: self, &block) } }
       end
 
+      #
+      # Evaluates the schemas schema using the saved locals.
+      # @return [Hash] The schema definition as an ast.
+      #
+      def run
+        schema.schema(**locals)
+      end
+
+      #
+      # Delegates missing methods first to locals and then to the given scope.
+      #
       def method_missing(meth, *args, &block)
         if local?(meth)
           locals[meth.to_sym]
-        elsif builder.respond_to?(meth)
-          builder.public_send(meth, *args, &block)
         elsif helper_method?(meth)
-          instance_exec(*args, &current_schema.method(meth).to_proc)
+          scope.send(meth, *args, &block)
         else
           super
         end
       end
 
+      #
+      # `true` if a local with that name is available, `super` otherwise.
+      #
+      def respond_to?(meth, priv = false)
+        local?(meth) || super
+      end
+
+      #
+      # `true` if a local with that name is available or the scope responds to this method.
+      #
       def respond_to_missing?(meth, include_private = false)
-        local?(meth) || builder.respond_to?(meth, include_private)
+        local?(meth) || scope.respond_to?(meth, include_private)
+      end
+
+      #
+      # @return [JSON::SchemaTemplates::Base] The schema fitting the current
+      #   partials name or path attribute, found by the resolver.
+      #   The schema will be initialized with this context as its context.
+      #
+      def schema
+        @schema ||= resolver.resolve(current_partial[:name] || current_partial[:name]).new(self)
+      end
+
+      #
+      # If a schema is available, it will supply the dirname, otherwise the current_partials will be
+      # used. Note that currently the `current_dir` attribute on the partial is only used if this
+      # context is executed in root mode or the user supplied it explicitly when creating the partial
+      # ast. Used to initialize this contexts resolver.
+      # @return [String] The name of the current directory.
+      #
+      def dirname
+        @schema&.dirname || current_partial[:current_dir]
+      end
+
+      #
+      # @return [Resolver] The context specific resolver used to find the partial class.
+      #
+      def resolver
+        @resolver ||= Resolver.new(scope.try(:dirname) || current_partial[:current_dir])
       end
 
       private
 
-      def current_path
-        current_schema.dirname
-      end
-
       #
-      # @return [Boolean] +true+ if the current schema is at least one module level deeper than the root module
+      # @param [#to_sym] name The name of the possible local value.
+      # @return [Boolean] `true` if a local with that name is specified, `false` otherwise.
       #
-      # @example
-      #   # current_path: 'schemas'
-      #   current_path_nested? # => false
-      #
-      #   # current_path: 'schemas/users'
-      #   current_path_nested? # => true
-      #
-      def current_path_nested?
-        current_path.include?('/')
-      end
-
-      #
-      # Determines the paths that should be looked into to find the requested partial.
-      # The paths will always include the base path as well as the current path,
-      # but in case of an already nested path, will also try to infer a sub-directory based
-      # on the partial's name similar to ActionView.
-      #
-      # @example Inferring a sub-directory based on the partial name
-      #   # current_path: schemas/users/show
-      #   partial_search_paths('attachment')
-      #   # => ['schemas/attachments', 'schemas/users', 'schemas']
-      #
-      def partial_search_paths(requested_partial)
-        [].tap do |paths|
-          if current_path_nested?
-            paths << "#{current_path.split('/')[0..-2].join('/')}/#{requested_partial.pluralize}"
-          end
-
-          paths << current_path
-          paths << config(:base_path)
-        end.uniq
-      end
-
-      #
-      # @param [String] requested_partial
-      #   The path to the partial as a slash separated string (e.g. 'users/user')
-      #   The method will search for the partial in the same directory as the calling template
-      #   as well as based on the root path
-      #
-      # @return [::JSON::SchemaTemplates::Base]
-      # @raise [JSON::SchemaTemplates::InvalidSchemaPathError] No partial with the given name could be found
-      #
-      def partial_class(requested_partial)
-        partial_search_paths(requested_partial).each do |path|
-          mod = "/#{path}/#{requested_partial}".camelize.safe_constantize
-          return mod if mod
-        end
-
-        fail InvalidSchemaPathError,
-             "The partial #{requested_partial.inspect} could not found." \
-             "Search paths were: #{partial_search_paths(requested_partial).inspect}"
-      end
-
       def local?(name)
         locals.key?(name.to_sym)
       end
 
+      #
+      # @return [Hash] The locals of this context, supplied by the `current_partial`.
+      # @see #initialize
+      #
       def locals
-        @locals ||= {}
-      end
-
-      def helper_method?(meth)
-        current_schema.respond_to?(meth)
+        @locals ||= current_partial[:locals].to_h
       end
 
       #
-      # Executes the given block with the given locals
+      # @return [Boolean] `true` if the scope responds to the given method.
+      # @see #method_missing
+      #
+      def helper_method?(meth)
+        scope.respond_to?(meth)
+      end
+
+      #
+      # Executes the given block with the given locals set to this contexts locals.
       #
       # @param [Hash] locals
-      #   Locals to be used inside a partial, similar to what ActionView does
+      #   Locals to be used inside a partial, similar to what ActionView does it.
+      # @return [Hash] the resulting ast from the evaluation.
       #
       def with_locals(locals)
+        result = nil
         @locals = @locals.tap do
           @locals = locals
-          yield
+          result = yield
         end
+        result
       end
-
-      delegate :as_json, to: :builder
       delegate :defaults_for, to: 'JSON::SchemaTemplates.configuration'
-
-      #
-      # Wraps the given JSON::SchemaBuilder entity in a new context
-      # Not a direct delegation to Context.wrap as we need access to the current path
-      # to forward it to the new context
-      #
-      def wrap(object, &block)
-        self.class.wrap(object, current_schema: current_schema, &block)
-      end
 
       #
       # Shortcut to get a certain configuration value

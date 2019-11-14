@@ -1,8 +1,9 @@
 # frozen_string_literal: true
 
-require 'json/schema_builder'
+require 'json-schema'
+require 'json/schema_dsl'
 
-%w[base additional_types builder_overrides context configuration].each do |file|
+%w[base context configuration types renderers resolver].each do |file|
   require "json/schema_templates/#{file}"
 end
 
@@ -20,8 +21,15 @@ module JSON
       yield(configuration)
     end
 
+    def self.enable!
+      JSON::SchemaDsl.register_type(Types::Email)
+      JSON::SchemaDsl.register_type(Types::DateTime)
+      JSON::SchemaDsl.register_type(Types::Partial)
+      JSON::SchemaDsl.registered_renderers.prepend(Renderers::PartialExpander)
+    end
+
     #
-    # @return [JSON::SchemaTemplates::Context, nil] the requested schema or +nil+ if it couldn't be found.
+    # @return [JSON::SchemaDsl::Builder, nil] the requested schema or +nil+ if it couldn't be found.
     #
     # @param [String] schema_path
     #   The requested schema relative to the schema base path.

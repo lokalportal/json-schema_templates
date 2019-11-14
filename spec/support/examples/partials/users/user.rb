@@ -13,9 +13,7 @@ module Examples
           end
 
           array :profile_images do
-            items do
-              object partial: 'attachment'
-            end
+            items type: :object, partial: 'attachment'
           end
 
           partial 'shared/timestamps' # Uses default local values

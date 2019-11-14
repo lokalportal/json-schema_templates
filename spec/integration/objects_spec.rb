@@ -6,7 +6,7 @@ describe Examples::Objects::Schema, type: :integration do
     include_examples 'schema comparison' do
       let(:expected_schema_definition) do
         proc do
-          object do
+          object(additional_properties: false) do
             object :foo, additional_properties: true, required: true do # Overridden in the schema itself
               object :bar, additional_properties: false do
                 string :baz
@@ -23,7 +23,7 @@ describe Examples::Objects::Schema, type: :integration do
     include_examples 'schema comparison' do
       let(:expected_schema_definition) do
         proc do
-          object do
+          object(additional_properties: true) do
             object :foo, additional_properties: true, required: true do
               object :bar, additional_properties: true do
                 string :baz

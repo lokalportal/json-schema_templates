@@ -8,11 +8,11 @@ module Examples
   module NullableObjects
     class Schema < ::JSON::SchemaTemplates::Base
       schema do
-        # object :foo, required: true do
-        #   object :bar, null: true, required: true do
-        #     string :baz
-        #   end
-        # end
+        object :foo, required: true do
+          object :bar, null: true, required: true do
+            string :baz
+          end
+        end
       end
     end
   end

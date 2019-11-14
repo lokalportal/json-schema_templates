@@ -5,7 +5,7 @@
 # the developer from using `null: true` on objects.
 # Once this is fixed, the test should be re-enabled.
 #
-describe Examples::NullableObjects::Schema, type: :integration, pending: true do
+describe Examples::NullableObjects::Schema, type: :integration do
   include_examples 'schema comparison' do
     let(:expected_schema_definition) do
       proc do

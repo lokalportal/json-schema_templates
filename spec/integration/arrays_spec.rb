@@ -6,7 +6,7 @@ describe Examples::Arrays::Schema, type: :integration,
   include_examples 'schema comparison' do
     let(:expected_schema_definition) do
       proc do
-        object do
+        object(additional_properties: false) do
           array :cars do
             items do
               object additional_properties: false do
